@@ -207,21 +207,21 @@ void load_events() {
                 events[key].push_back(event);
                 events_loaded++;
                 
-                // std::cerr << "Added event: " << key << " -> " << description << std::endl;
+                std::cerr << "Added event: " << key << " -> " << description << std::endl;
             } else {
                 std::cerr << "Invalid date: " << month << "/" << day << std::endl;
             }
         }
     }
     
-    // std::cerr << "Total events loaded: " << events_loaded << std::endl;
+    std::cerr << "Total events loaded: " << events_loaded << std::endl;
 }
 
 std::string get_event_color(const Event& event) {
     switch (event.type) {
         case EventType::HOLIDAY: return RED;
         case EventType::BIRTHDAY: return MAGENTA;
-        case EventType::REMINDER: return CYAN;
+        case EventType::REMINDER: return GREEN;
         default: return GREEN;
     }
 }

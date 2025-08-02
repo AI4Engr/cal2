@@ -92,7 +92,7 @@ cal2 7 2024
 
 - `Holiday`: Shown in 🔴 red
 - `Birthday`: Shown in 🟣 magenta
-- `Reminder`: Shown in 🔵 cyan
+- `Reminder`: Shown in 🟢 green
 
 ## 🖥️ Screenshots
 
