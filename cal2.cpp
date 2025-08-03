@@ -71,6 +71,17 @@ constexpr char BRIGHT_WHITE[] = "\x1b[97m";
 
 // Color configuration structure
 struct ColorConfig {
+#ifdef _WIN32
+    std::string sunday_title = BRIGHT_RED;
+    std::string saturday_title = BRIGHT_BLUE;
+    std::string workday_title = "";
+    std::string sunday_date = BRIGHT_RED;
+    std::string saturday_date = BRIGHT_BLUE;
+    std::string workday_date = "";
+    std::string holiday = BRIGHT_RED;
+    std::string birthday = BRIGHT_MAGENTA;
+    std::string reminder = BRIGHT_CYAN;
+#else
     std::string sunday_title = RED;
     std::string saturday_title = BLUE;
     std::string workday_title = "";
@@ -80,6 +91,7 @@ struct ColorConfig {
     std::string holiday = RED;
     std::string birthday = MAGENTA;
     std::string reminder = CYAN;
+#endif
 };
 
 // Global color configuration
@@ -108,6 +120,7 @@ std::string get_color_code(const std::string& color_name) {
     std::string lower_name = color_name;
     std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), ::tolower);
 
+    // Basic colors
     if (lower_name == "red") return RED;
     if (lower_name == "blue") return BLUE;
     if (lower_name == "green") return GREEN;
@@ -116,6 +129,8 @@ std::string get_color_code(const std::string& color_name) {
     if (lower_name == "cyan") return CYAN;
     if (lower_name == "black") return BLACK;
     if (lower_name == "white") return WHITE;
+    
+    // Bright colors
     if (lower_name == "bright_red") return BRIGHT_RED;
     if (lower_name == "bright_green") return BRIGHT_GREEN;
     if (lower_name == "bright_yellow") return BRIGHT_YELLOW;
@@ -123,6 +138,67 @@ std::string get_color_code(const std::string& color_name) {
     if (lower_name == "bright_magenta") return BRIGHT_MAGENTA;
     if (lower_name == "bright_cyan") return BRIGHT_CYAN;
     if (lower_name == "bright_white") return BRIGHT_WHITE;
+    
+    // 256-color support (common colors)
+    if (lower_name == "orange") return "\033[38;5;208m";
+    if (lower_name == "purple") return "\033[38;5;129m";
+    if (lower_name == "pink") return "\033[38;5;205m";
+    if (lower_name == "brown") return "\033[38;5;130m";
+    if (lower_name == "gray" || lower_name == "grey") return "\033[38;5;244m";
+    if (lower_name == "dark_red") return "\033[38;5;88m";
+    if (lower_name == "dark_green") return "\033[38;5;22m";
+    if (lower_name == "dark_blue") return "\033[38;5;18m";
+    if (lower_name == "light_red") return "\033[38;5;203m";
+    if (lower_name == "light_green") return "\033[38;5;119m";
+    if (lower_name == "light_blue") return "\033[38;5;117m";
+    if (lower_name == "gold") return "\033[38;5;220m";
+    if (lower_name == "silver") return "\033[38;5;250m";
+    if (lower_name == "lime") return "\033[38;5;154m";
+    if (lower_name == "navy") return "\033[38;5;17m";
+    if (lower_name == "maroon") return "\033[38;5;52m";
+    if (lower_name == "olive") return "\033[38;5;58m";
+    if (lower_name == "teal") return "\033[38;5;30m";
+    if (lower_name == "aqua") return "\033[38;5;51m";
+    if (lower_name == "fuchsia") return "\033[38;5;201m";
+    
+    // Colors optimized for light backgrounds
+    if (lower_name == "dark_gray" || lower_name == "dark_grey") return "\033[38;5;236m";
+    if (lower_name == "charcoal") return "\033[38;5;238m";
+    if (lower_name == "slate") return "\033[38;5;240m";
+    if (lower_name == "steel") return "\033[38;5;67m";
+    if (lower_name == "indigo") return "\033[38;5;54m";
+    if (lower_name == "violet") return "\033[38;5;93m";
+    if (lower_name == "crimson") return "\033[38;5;160m";
+    if (lower_name == "forest") return "\033[38;5;28m";
+    if (lower_name == "emerald") return "\033[38;5;34m";
+    if (lower_name == "sapphire") return "\033[38;5;19m";
+    if (lower_name == "amber") return "\033[38;5;214m";
+    if (lower_name == "coral") return "\033[38;5;209m";
+    if (lower_name == "rust") return "\033[38;5;166m";
+    if (lower_name == "bronze") return "\033[38;5;136m";
+    if (lower_name == "copper") return "\033[38;5;173m";
+    if (lower_name == "chocolate") return "\033[38;5;94m";
+    if (lower_name == "coffee") return "\033[38;5;52m";
+    if (lower_name == "wine") return "\033[38;5;89m";
+    if (lower_name == "plum") return "\033[38;5;96m";
+    if (lower_name == "midnight") return "\033[38;5;17m";
+    if (lower_name == "deep_blue") return "\033[38;5;20m";
+    if (lower_name == "deep_green") return "\033[38;5;22m";
+    if (lower_name == "deep_red") return "\033[38;5;88m";
+    if (lower_name == "deep_purple") return "\033[38;5;55m";
+    if (lower_name == "deep_orange") return "\033[38;5;130m";
+    if (lower_name == "royal_blue") return "\033[38;5;21m";
+    if (lower_name == "royal_purple") return "\033[38;5;57m";
+    if (lower_name == "sea_green") return "\033[38;5;29m";
+    if (lower_name == "sky_blue") return "\033[38;5;75m";
+    if (lower_name == "rose") return "\033[38;5;168m";
+    if (lower_name == "salmon") return "\033[38;5;174m";
+    if (lower_name == "peach") return "\033[38;5;216m";
+    if (lower_name == "mint") return "\033[38;5;121m";
+    if (lower_name == "lavender") return "\033[38;5;183m";
+    if (lower_name == "turquoise") return "\033[38;5;80m";
+    
+    // Default/none
     if (lower_name == "none" || lower_name == "default" || lower_name == "") return "";
 
     // If color name not recognized, return empty string (default color)
@@ -594,9 +670,16 @@ void print_twelve_months(int start_year, int start_month, int today_y, int today
 
 void print_events_legend() {
     std::cout << "\nLegend:\n";
+#ifdef _WIN32
+    // Use asterisk for better compatibility in Visual Studio console
+    std::cout << colors.holiday << "*" << RESET << " Holiday  ";
+    std::cout << colors.birthday << "*" << RESET << " Birthday  ";
+    std::cout << colors.reminder << "*" << RESET << " Reminder\n";
+#else
     std::cout << colors.holiday << "●" << RESET << " Holiday  ";
     std::cout << colors.birthday << "●" << RESET << " Birthday  ";
     std::cout << colors.reminder << "●" << RESET << " Reminder\n";
+#endif
 }
 
 void print_help() {
