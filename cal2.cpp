@@ -81,6 +81,19 @@ struct ColorConfig {
     std::string holiday = BRIGHT_RED;
     std::string birthday = BRIGHT_MAGENTA;
     std::string reminder = BRIGHT_CYAN;
+    // Month colors - colorful defaults
+    std::string january = BRIGHT_CYAN;
+    std::string february = BRIGHT_MAGENTA;
+    std::string march = BRIGHT_GREEN;
+    std::string april = BRIGHT_YELLOW;
+    std::string may = BRIGHT_RED;
+    std::string june = BRIGHT_BLUE;
+    std::string july = BRIGHT_YELLOW;
+    std::string august = BRIGHT_GREEN;
+    std::string september = BRIGHT_MAGENTA;
+    std::string october = BRIGHT_RED;
+    std::string november = BRIGHT_CYAN;
+    std::string december = BRIGHT_BLUE;
 #else
     std::string sunday_title = RED;
     std::string saturday_title = BLUE;
@@ -91,6 +104,19 @@ struct ColorConfig {
     std::string holiday = RED;
     std::string birthday = MAGENTA;
     std::string reminder = CYAN;
+    // Month colors - colorful defaults
+    std::string january = CYAN;
+    std::string february = MAGENTA;
+    std::string march = GREEN;
+    std::string april = YELLOW;
+    std::string may = RED;
+    std::string june = BLUE;
+    std::string july = YELLOW;
+    std::string august = GREEN;
+    std::string september = MAGENTA;
+    std::string october = RED;
+    std::string november = CYAN;
+    std::string december = BLUE;
 #endif
 };
 
@@ -338,6 +364,19 @@ void load_events() {
                 else if (key == "holiday") colors.holiday = get_color_code(value);
                 else if (key == "birthday") colors.birthday = get_color_code(value);
                 else if (key == "reminder") colors.reminder = get_color_code(value);
+                // Month colors
+                else if (key == "january" || key == "jan" || key == "1") colors.january = get_color_code(value);
+                else if (key == "february" || key == "feb" || key == "2") colors.february = get_color_code(value);
+                else if (key == "march" || key == "mar" || key == "3") colors.march = get_color_code(value);
+                else if (key == "april" || key == "apr" || key == "4") colors.april = get_color_code(value);
+                else if (key == "may" || key == "5") colors.may = get_color_code(value);
+                else if (key == "june" || key == "jun" || key == "6") colors.june = get_color_code(value);
+                else if (key == "july" || key == "jul" || key == "7") colors.july = get_color_code(value);
+                else if (key == "august" || key == "aug" || key == "8") colors.august = get_color_code(value);
+                else if (key == "september" || key == "sep" || key == "9") colors.september = get_color_code(value);
+                else if (key == "october" || key == "oct" || key == "10") colors.october = get_color_code(value);
+                else if (key == "november" || key == "nov" || key == "11") colors.november = get_color_code(value);
+                else if (key == "december" || key == "dec" || key == "12") colors.december = get_color_code(value);
             }
             continue;
         }
@@ -416,6 +455,24 @@ std::vector<Event> get_events(int month, int day) {
     return (it != events.end()) ? it->second : std::vector<Event>();
 }
 
+std::string get_month_color(int month) {
+    switch (month) {
+        case 1: return colors.january;
+        case 2: return colors.february;
+        case 3: return colors.march;
+        case 4: return colors.april;
+        case 5: return colors.may;
+        case 6: return colors.june;
+        case 7: return colors.july;
+        case 8: return colors.august;
+        case 9: return colors.september;
+        case 10: return colors.october;
+        case 11: return colors.november;
+        case 12: return colors.december;
+        default: return "";
+    }
+}
+
 int weekday(int y, int m, int d, bool monday_first = false) {
     if (m <= 2) { m += 12; --y; }
     int K = y % 100;
@@ -454,16 +511,19 @@ MonthData get_month_data(int y, int m, int today_y, int today_m, int today_d, bo
     
     // Compact header format: "Jan 2024" (8 chars max)
     std::string year_str = std::to_string(y);
-    data.header = std::string(names[m - 1]) + " " + year_str;
+    std::string month_color = get_month_color(m);
+    std::string month_name = std::string(names[m - 1]) + " " + year_str;
     
-    // Make header exactly 20 characters
-    int header_len = data.header.length();
+    // Calculate padding for plain text (without color codes)
+    int header_len = month_name.length();
     if (header_len > 20) {
-        data.header = data.header.substr(0, 20);
-    } else {
-        int padding = (20 - header_len) / 2;
-        data.header = std::string(padding, ' ') + data.header + std::string(20 - header_len - padding, ' ');
+        month_name = month_name.substr(0, 20);
+        header_len = 20;
     }
+    int padding = (20 - header_len) / 2;
+    
+    // Build header with color codes
+    data.header = std::string(padding, ' ') + month_color + month_name + RESET + std::string(20 - header_len - padding, ' ');
     
     int start = weekday(y, m, 1, monday_first);
     int dim = days_in_month(y, m);
@@ -578,13 +638,14 @@ void print_month_vertical(int y, int m, int today_y, int today_m, int today_d, b
         "July","August","September","October","November","December"
     };
     
+    std::string month_color = get_month_color(m);
     if (monday_first) {
-        std::cout << "     " << names[m - 1] << " " << y << "\n"
+        std::cout << "     " << month_color << names[m - 1] << " " << y << RESET << "\n"
                   << colors.workday_title << "Mo Tu We Th Fr " << RESET
                   << colors.saturday_title << "Sa " << RESET
                   << colors.sunday_title << "Su" << RESET << "\n";
     } else {
-        std::cout << "     " << names[m - 1] << " " << y << "\n"
+        std::cout << "     " << month_color << names[m - 1] << " " << y << RESET << "\n"
                   << colors.sunday_title << "Su " << RESET
                   << colors.workday_title << "Mo Tu We Th Fr " << RESET
                   << colors.saturday_title << "Sa" << RESET << "\n";
