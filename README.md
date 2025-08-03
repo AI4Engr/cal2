@@ -57,6 +57,60 @@ make
 sudo make install  # System-wide (or omit sudo for ~/.local/bin)
 ```
 
+## 🎨 Color Themes
+
+### Dark Terminal Theme
+For dark backgrounds, use bright and vivid colors:
+
+```ini
+[colors]
+sunday_title = bright_red
+saturday_title = bright_blue
+workday_title = default
+
+sunday_date = bright_red
+saturday_date = bright_blue
+workday_date = default
+
+holiday = bright_red
+birthday = bright_magenta
+reminder = bright_cyan
+```
+
+### Light Terminal Theme
+For light backgrounds, use darker colors for better contrast:
+
+```ini
+[colors]
+sunday_title = crimson
+saturday_title = royal_blue
+workday_title = charcoal
+
+sunday_date = crimson
+saturday_date = royal_blue
+workday_date = slate
+
+holiday = deep_red
+birthday = deep_purple
+reminder = forest
+```
+
+### Alternative Light Theme
+```ini
+[colors]
+sunday_title = wine
+saturday_title = navy
+workday_title = midnight
+
+sunday_date = wine
+saturday_date = navy
+workday_date = steel
+
+holiday = crimson
+birthday = violet
+reminder = emerald
+```
+
 ## 🛠️ Configuration
 
 Create `~/.cal2/cal2.ini` (or `%USERPROFILE%\.cal2\cal2.ini` on Windows):
