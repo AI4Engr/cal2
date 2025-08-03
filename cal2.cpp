@@ -40,6 +40,15 @@ constexpr char YELLOW[] = "\033[33m";
 constexpr char MAGENTA[] = "\033[35m";
 constexpr char CYAN[] = "\033[36m";
 constexpr char REV[]   = "\033[7m";
+constexpr char BLACK[] = "\033[30m";
+constexpr char WHITE[] = "\033[37m";
+constexpr char BRIGHT_RED[] = "\033[91m";
+constexpr char BRIGHT_GREEN[] = "\033[92m";
+constexpr char BRIGHT_YELLOW[] = "\033[93m";
+constexpr char BRIGHT_BLUE[] = "\033[94m";
+constexpr char BRIGHT_MAGENTA[] = "\033[95m";
+constexpr char BRIGHT_CYAN[] = "\033[96m";
+constexpr char BRIGHT_WHITE[] = "\033[97m";
 #else
 constexpr char RESET[] = "\x1b[0m";
 constexpr char RED[]   = "\x1b[31m";
@@ -49,7 +58,32 @@ constexpr char YELLOW[] = "\x1b[33m";
 constexpr char MAGENTA[] = "\x1b[35m";
 constexpr char CYAN[] = "\x1b[36m";
 constexpr char REV[]   = "\x1b[7m";
+constexpr char BLACK[] = "\x1b[30m";
+constexpr char WHITE[] = "\x1b[37m";
+constexpr char BRIGHT_RED[] = "\x1b[91m";
+constexpr char BRIGHT_GREEN[] = "\x1b[92m";
+constexpr char BRIGHT_YELLOW[] = "\x1b[93m";
+constexpr char BRIGHT_BLUE[] = "\x1b[94m";
+constexpr char BRIGHT_MAGENTA[] = "\x1b[95m";
+constexpr char BRIGHT_CYAN[] = "\x1b[96m";
+constexpr char BRIGHT_WHITE[] = "\x1b[97m";
 #endif
+
+// Color configuration structure
+struct ColorConfig {
+    std::string sunday_title = RED;
+    std::string saturday_title = BLUE;
+    std::string workday_title = "";
+    std::string sunday_date = RED;
+    std::string saturday_date = BLUE;
+    std::string workday_date = "";
+    std::string holiday = RED;
+    std::string birthday = MAGENTA;
+    std::string reminder = CYAN;
+};
+
+// Global color configuration
+ColorConfig colors;
 
 // Event types
 enum class EventType {
@@ -69,10 +103,36 @@ struct Event {
 // Global events map: key = "MM-DD", value = vector of events
 std::map<std::string, std::vector<Event>> events;
 
+// Function to convert color name to ANSI code
+std::string get_color_code(const std::string& color_name) {
+    std::string lower_name = color_name;
+    std::transform(lower_name.begin(), lower_name.end(), lower_name.begin(), ::tolower);
+
+    if (lower_name == "red") return RED;
+    if (lower_name == "blue") return BLUE;
+    if (lower_name == "green") return GREEN;
+    if (lower_name == "yellow") return YELLOW;
+    if (lower_name == "magenta") return MAGENTA;
+    if (lower_name == "cyan") return CYAN;
+    if (lower_name == "black") return BLACK;
+    if (lower_name == "white") return WHITE;
+    if (lower_name == "bright_red") return BRIGHT_RED;
+    if (lower_name == "bright_green") return BRIGHT_GREEN;
+    if (lower_name == "bright_yellow") return BRIGHT_YELLOW;
+    if (lower_name == "bright_blue") return BRIGHT_BLUE;
+    if (lower_name == "bright_magenta") return BRIGHT_MAGENTA;
+    if (lower_name == "bright_cyan") return BRIGHT_CYAN;
+    if (lower_name == "bright_white") return BRIGHT_WHITE;
+    if (lower_name == "none" || lower_name == "default" || lower_name == "") return "";
+
+    // If color name not recognized, return empty string (default color)
+    return "";
+}
+
 std::string get_home_dir() {
     const char* home = std::getenv(HOME_ENV);
     if (home) return std::string(home);
-    
+
 #ifdef _WIN32
     return std::string();
 #else
@@ -161,67 +221,110 @@ void load_events() {
     
     std::string line;
     int events_loaded = 0;
+    std::string current_section = "";
+
     while (std::getline(file, line)) {
         // Skip empty lines and comments
         if (line.empty() || line[0] == '#' || line[0] == ';') continue;
-        
-        // std::cerr << "Processing line: " << line << std::endl;
-        
+
+        // Trim whitespace
+        line.erase(0, line.find_first_not_of(" \t"));
+        line.erase(line.find_last_not_of(" \t") + 1);
+
+        // Check for section headers [section]
+        if (line[0] == '[' && line.back() == ']') {
+            current_section = line.substr(1, line.length() - 2);
+            std::transform(current_section.begin(), current_section.end(), current_section.begin(), ::tolower);
+            continue;
+        }
+
+        // Handle color configuration
+        if (current_section == "colors") {
+            size_t eq_pos = line.find('=');
+            if (eq_pos != std::string::npos) {
+                std::string key = line.substr(0, eq_pos);
+                std::string value = line.substr(eq_pos + 1);
+
+                // Trim key and value
+                key.erase(0, key.find_first_not_of(" \t"));
+                key.erase(key.find_last_not_of(" \t") + 1);
+                value.erase(0, value.find_first_not_of(" \t"));
+                value.erase(value.find_last_not_of(" \t") + 1);
+
+                std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+
+                if (key == "sunday_title") colors.sunday_title = get_color_code(value);
+                else if (key == "saturday_title") colors.saturday_title = get_color_code(value);
+                else if (key == "workday_title") colors.workday_title = get_color_code(value);
+                else if (key == "sunday_date") colors.sunday_date = get_color_code(value);
+                else if (key == "saturday_date") colors.saturday_date = get_color_code(value);
+                else if (key == "workday_date") colors.workday_date = get_color_code(value);
+                else if (key == "holiday") colors.holiday = get_color_code(value);
+                else if (key == "birthday") colors.birthday = get_color_code(value);
+                else if (key == "reminder") colors.reminder = get_color_code(value);
+            }
+            continue;
+        }
+
+        // Handle events (default section or any other section)
         std::istringstream iss(line);
         std::string date_str, description;
-        
+
         if (iss >> date_str) {
             // Get the rest of the line as description
             std::getline(iss, description);
             if (!description.empty() && description[0] == ' ') {
                 description = description.substr(1); // Remove leading space
             }
-            
-            // std::cerr << "Date: " << date_str << ", Description: " << description << std::endl;
-            
+
             int month = 0, day = 0;
             parse_date(date_str, month, day);
-            
-            // std::cerr << "Parsed month: " << month << ", day: " << day << std::endl;
-            
+
             if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
                 Event event;
                 event.month = month;
                 event.day = day;
                 event.description = description;
-                
-                // Determine event type based on description or section
-                if (description.find("birthday") != std::string::npos || 
-                    description.find("Birthday") != std::string::npos ||
-                    description.find("BIRTHDAY") != std::string::npos) {
-                    event.type = EventType::BIRTHDAY;
-                } else if (description.find("holiday") != std::string::npos ||
-                          description.find("Holiday") != std::string::npos ||
-                          description.find("HOLIDAY") != std::string::npos) {
+
+                // Determine event type based on section or description
+                if (current_section == "holidays" || current_section == "holiday") {
                     event.type = EventType::HOLIDAY;
-                } else {
+                } else if (current_section == "birthdays" || current_section == "birthday") {
+                    event.type = EventType::BIRTHDAY;
+                } else if (current_section == "reminders" || current_section == "reminder") {
                     event.type = EventType::REMINDER;
+                } else {
+                    // Auto-detect based on description
+                    if (description.find("birthday") != std::string::npos ||
+                        description.find("Birthday") != std::string::npos ||
+                        description.find("BIRTHDAY") != std::string::npos) {
+                        event.type = EventType::BIRTHDAY;
+                    } else if (description.find("holiday") != std::string::npos ||
+                              description.find("Holiday") != std::string::npos ||
+                              description.find("HOLIDAY") != std::string::npos) {
+                        event.type = EventType::HOLIDAY;
+                    } else {
+                        event.type = EventType::REMINDER;
+                    }
                 }
-                
+
                 std::string key = std::to_string(month) + "-" + std::to_string(day);
                 events[key].push_back(event);
                 events_loaded++;
-                
-                std::cerr << "Added event: " << key << " -> " << description << std::endl;
             } else {
                 std::cerr << "Invalid date: " << month << "/" << day << std::endl;
             }
         }
     }
     
-    std::cerr << "Total events loaded: " << events_loaded << std::endl;
+    // std::cerr << "Total events loaded: " << events_loaded << std::endl;
 }
 
 std::string get_event_color(const Event& event) {
     switch (event.type) {
-        case EventType::HOLIDAY: return RED;
-        case EventType::BIRTHDAY: return MAGENTA;
-        case EventType::REMINDER: return GREEN;
+        case EventType::HOLIDAY: return colors.holiday;
+        case EventType::BIRTHDAY: return colors.birthday;
+        case EventType::REMINDER: return colors.reminder;
         default: return GREEN;
     }
 }
@@ -318,9 +421,11 @@ MonthData get_month_data(int y, int m, int today_y, int today_m, int today_d, bo
                         day_str += get_event_color(day_events[0]);
                     }
                 } else if ((monday_first && wday == 6) || (!monday_first && wday == 0)) {
-                    day_str += RED;  // Sunday
+                    day_str += colors.sunday_date;  // Sunday
                 } else if ((monday_first && wday == 5) || (!monday_first && wday == 6)) {
-                    day_str += BLUE; // Saturday
+                    day_str += colors.saturday_date; // Saturday
+                } else {
+                    day_str += colors.workday_date; // Workday
                 }
                 
                 // Format day with exactly 3 chars per day including space
@@ -359,9 +464,13 @@ void print_month_horizontal(const std::vector<MonthData>& months, bool monday_fi
     // Print day headers - Su Mo Tu We Th Fr Sa = 20 chars exactly
     for (size_t i = 0; i < months.size(); ++i) {
         if (monday_first) {
-            std::cout << "Mo Tu We Th Fr " << BLUE << "Sa" << RESET << " " << RED << "Su" << RESET;
+            std::cout << colors.workday_title << "Mo Tu We Th Fr " << RESET
+                      << colors.saturday_title << "Sa" << RESET << " "
+                      << colors.sunday_title << "Su" << RESET;
         } else {
-            std::cout << RED << "Su" << RESET << " Mo Tu We Th Fr " << BLUE << "Sa" << RESET;
+            std::cout << colors.sunday_title << "Su" << RESET << " "
+                      << colors.workday_title << "Mo Tu We Th Fr " << RESET
+                      << colors.saturday_title << "Sa" << RESET;
         }
         if (i < months.size() - 1) std::cout << " ";
     }
@@ -394,9 +503,15 @@ void print_month_vertical(int y, int m, int today_y, int today_m, int today_d, b
     };
     
     if (monday_first) {
-        std::cout << "     " << names[m - 1] << " " << y << "\nMo Tu We Th Fr Sa Su\n";
+        std::cout << "     " << names[m - 1] << " " << y << "\n"
+                  << colors.workday_title << "Mo Tu We Th Fr " << RESET
+                  << colors.saturday_title << "Sa " << RESET
+                  << colors.sunday_title << "Su" << RESET << "\n";
     } else {
-        std::cout << "     " << names[m - 1] << " " << y << "\nSu Mo Tu We Th Fr Sa\n";
+        std::cout << "     " << names[m - 1] << " " << y << "\n"
+                  << colors.sunday_title << "Su " << RESET
+                  << colors.workday_title << "Mo Tu We Th Fr " << RESET
+                  << colors.saturday_title << "Sa" << RESET << "\n";
     }
     
     int start = weekday(y, m, 1, monday_first);
@@ -416,9 +531,11 @@ void print_month_vertical(int y, int m, int today_y, int today_m, int today_d, b
                 std::cout << get_event_color(day_events[0]);
             }
         } else if ((monday_first && wday == 6) || (!monday_first && wday == 0)) {
-            std::cout << RED;  // Sunday
+            std::cout << colors.sunday_date;  // Sunday
         } else if ((monday_first && wday == 5) || (!monday_first && wday == 6)) {
-            std::cout << BLUE; // Saturday
+            std::cout << colors.saturday_date; // Saturday
+        } else {
+            std::cout << colors.workday_date; // Workday
         }
         
         if (d < 10) {
@@ -477,9 +594,9 @@ void print_twelve_months(int start_year, int start_month, int today_y, int today
 
 void print_events_legend() {
     std::cout << "\nLegend:\n";
-    std::cout << RED << "●" << RESET << " Holiday  ";
-    std::cout << MAGENTA << "●" << RESET << " Birthday  ";
-    std::cout << CYAN << "●" << RESET << " Reminder\n";
+    std::cout << colors.holiday << "●" << RESET << " Holiday  ";
+    std::cout << colors.birthday << "●" << RESET << " Birthday  ";
+    std::cout << colors.reminder << "●" << RESET << " Reminder\n";
 }
 
 void print_help() {
