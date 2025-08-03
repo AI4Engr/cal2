@@ -56,6 +56,39 @@ cmake ..
 make
 sudo make install  # System-wide (or omit sudo for ~/.local/bin)
 ```
+## 🛠️ Configuration
+
+Create `~/.cal2/cal2.ini` (or `%USERPROFILE%\.cal2\cal2.ini` on Windows):
+
+```ini
+# Format: MM/DD Description (type auto-detected)
+[colors]
+sunday_title = bright_red
+saturday_title = bright_blue
+workday_title = default
+
+# Date number colors
+sunday_date = bright_red
+saturday_date = bright_blue
+workday_date = default
+
+# Event type colors
+holiday = bright_red
+birthday = bright_magenta
+reminder = bright_cyan
+
+[holidays]
+1/1 New Year's Day
+11/24 Thanksgiving
+12/25 Christmas Day
+
+[birthdays]
+3/15 Alice's Birthday
+
+[reminders]
+2/14 Valentine's Day
+4/15 Tax Day
+```
 
 ## 🎨 Color Themes
 
@@ -109,40 +142,6 @@ workday_date = steel
 holiday = crimson
 birthday = violet
 reminder = emerald
-```
-
-## 🛠️ Configuration
-
-Create `~/.cal2/cal2.ini` (or `%USERPROFILE%\.cal2\cal2.ini` on Windows):
-
-```ini
-# Format: MM/DD Description (type auto-detected)
-[colors]
-sunday_title = bright_red
-saturday_title = bright_blue
-workday_title = default
-
-# Date number colors
-sunday_date = bright_red
-saturday_date = bright_blue
-workday_date = default
-
-# Event type colors
-holiday = bright_red
-birthday = bright_magenta
-reminder = bright_cyan
-
-[holidays]
-1/1 New Year's Day
-11/24 Thanksgiving
-12/25 Christmas Day
-
-[birthdays]
-3/15 Alice's Birthday
-
-[reminders]
-2/14 Valentine's Day
-4/15 Tax Day
 ```
 
 ## 🎨 Usage Examples
